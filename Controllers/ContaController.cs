@@ -1,7 +1,12 @@
-﻿using ByteBank.Forum.ViewModels;
+﻿using ByteBank.Forum.Models;
+using ByteBank.Forum.ViewModels;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.AspNet.Identity.Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -9,6 +14,24 @@ namespace ByteBank.Forum.Controllers
 {
     public class ContaController : Controller
     {
+        private UserManager<UsuarioAplicacao> _userManager;
+        public UserManager<UsuarioAplicacao> UserManager
+        {
+            get
+            {
+                if(_userManager == null)
+                {
+                    var contextOwin = HttpContext.GetOwinContext();
+                    _userManager = contextOwin.GetUserManager<UserManager<UsuarioAplicacao>>();
+                }
+                return _userManager;
+            }
+            set
+            {
+                _userManager = value;
+            }
+        }
+
         // GET: Conta
         public ActionResult Registrar()
         {
@@ -16,8 +39,21 @@ namespace ByteBank.Forum.Controllers
         }
 
         [HttpPost]
-        public ActionResult Registrar(ContaRegistrarViewModel modelo)
+        public async Task<ActionResult> Registrar(ContaRegistrarViewModel modelo)
         {
+            if (ModelState.IsValid)
+            {
+               
+                var novoUsuario = new UsuarioAplicacao();
+
+                novoUsuario.Email = modelo.Email;
+                novoUsuario.UserName = modelo.UserName;
+                novoUsuario.Nome = modelo.Nome;
+
+                await UserManager.CreateAsync(novoUsuario, modelo.Senha);
+
+                return RedirectToAction("Index", "Home");
+            }
             return View();
         }
     }

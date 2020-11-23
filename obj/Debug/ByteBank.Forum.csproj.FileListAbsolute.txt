@@ -85,3 +85,16 @@ C:\Cursos\ByteBank.Forum\ByteBank.Forum\obj\Debug\ByteBank.Forum.csproj.CoreComp
 C:\Cursos\ByteBank.Forum\ByteBank.Forum\obj\Debug\ByteBank.Forum.csproj.CopyComplete
 C:\Cursos\ByteBank.Forum\ByteBank.Forum\obj\Debug\ByteBank.Forum.dll
 C:\Cursos\ByteBank.Forum\ByteBank.Forum\obj\Debug\ByteBank.Forum.pdb
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.AspNet.Identity.Owin.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Host.SystemWeb.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.Cookies.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.OAuth.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Owin.dll
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.AspNet.Identity.Owin.xml
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.xml
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Host.SystemWeb.xml
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.xml
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.Cookies.xml
+C:\Cursos\ByteBank.Forum\ByteBank.Forum\bin\Microsoft.Owin.Security.OAuth.xml
