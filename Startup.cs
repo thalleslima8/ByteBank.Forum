@@ -5,6 +5,7 @@ using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.Owin;
 using Owin;
 using System.Data.Entity;
+using ByteBank.Forum.App_Start.Identity;
 
 [assembly: OwinStartup(typeof(ByteBank.Forum.Startup))]
 
@@ -28,7 +29,22 @@ namespace ByteBank.Forum
                 (opcoes, contextoOwion) =>
                 {
                     var userStore = contextoOwion.Get<IUserStore<UsuarioAplicacao>>();
-                    return new UserManager<UsuarioAplicacao>(userStore);
+                    var userManager = new UserManager<UsuarioAplicacao>(userStore);
+
+                    var userValidator = new UserValidator<UsuarioAplicacao>(userManager);
+
+                    userValidator.RequireUniqueEmail = true;
+
+                    userManager.UserValidator = userValidator;
+                    userManager.PasswordValidator = new SenhaValidador()
+                    {
+                        TamanhoRequerido = 6,
+                        ObrigatorioCaracteresLowerCase = true,
+                        ObrigatorioCaracteresUpperCase = true,
+                        ObrigatorioDigitos = true
+                    };
+
+                    return userManager;
                 });
         }
     }
