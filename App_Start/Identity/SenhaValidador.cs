@@ -34,7 +34,7 @@ namespace ByteBank.Forum.App_Start.Identity
                 erros.Add($"A senha deve conter no mínimo um dígito.");
 
             if (erros.Any())
-                return IdentityResult.Failed(erros.ToArray());
+                return  IdentityResult.Failed(erros.ToArray());
 
             return IdentityResult.Success;
         }

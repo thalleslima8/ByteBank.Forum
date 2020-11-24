@@ -50,23 +50,57 @@ namespace ByteBank.Forum.Controllers
                 novoUsuario.UserName = modelo.UserName;
                 novoUsuario.Nome = modelo.Nome;
 
-                var usuario = UserManager.FindByEmail(modelo.Email);
+                var usuario = await UserManager.FindByEmailAsync(modelo.Email);
 
                 if(usuario != null)
-                    return RedirectToAction("Index", "Home");
-                
+                    return View("AguardandoConfirmacao");
+
 
                 var resultado = await UserManager.CreateAsync(novoUsuario, modelo.Senha);
 
                 if (resultado.Succeeded)
                 {
-                    return RedirectToAction("Index", "Home");
+                    //Enviar o email confirmacao
+                    await EnviarEmailConfirmacaoAsync(novoUsuario);
+
+                    return View("AguardandoConfirmacao");
                 }
 
                 AdicionaErros(resultado);
 
             }
             return View();
+        }
+
+        public async Task<ActionResult> ConfirmacaoEmail(string usuarioId, string token)
+        {
+            if (usuarioId == null || token == null)
+                return View("Error");
+
+            var resultado = await UserManager.ConfirmEmailAsync(usuarioId, token);
+
+            if (resultado.Succeeded)
+                return RedirectToAction("Index", "Home");
+
+            return View("Error");
+        }
+
+        private async Task EnviarEmailConfirmacaoAsync(UsuarioAplicacao usuario)
+        {
+            var token = await UserManager.GenerateEmailConfirmationTokenAsync(usuario.Id);
+            var linkCallBack =
+                Url.Action(
+                    "ConfirmacaoEmail",
+                    "Conta",
+                    new { usuarioId = usuario.Id, token = token },
+                    Request.Url.Scheme);
+
+            await UserManager.SendEmailAsync(
+                usuario.Id,
+                "Fórum ByteBank - Confirmação de E-mail",
+                //$"Bem Vindo ao fórum ByteBank, use o código {token} para confirmar seu endereço de e-mail."
+                $"Bem Vindo ao fórum ByteBank, clique aqui {linkCallBack} para confirmar seu endereço de e-mail!"
+            );
         }
 
         private void AdicionaErros(IdentityResult resultado)
