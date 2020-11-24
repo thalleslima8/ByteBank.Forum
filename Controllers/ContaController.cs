@@ -1,11 +1,8 @@
 ﻿using ByteBank.Forum.Models;
 using ByteBank.Forum.ViewModels;
 using Microsoft.AspNet.Identity;
-using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Owin.Security;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
@@ -50,7 +47,14 @@ namespace ByteBank.Forum.Controllers
             }
         }
 
-
+        public IAuthenticationManager AuthenticationManager
+        {
+            get
+            {
+                var contextoOwin = Request.GetOwinContext();
+                return contextoOwin.Authentication;
+            }
+        }
 
         // GET: Conta
         public ActionResult Registrar()
@@ -69,6 +73,7 @@ namespace ByteBank.Forum.Controllers
                 novoUsuario.Email = modelo.Email;
                 novoUsuario.UserName = modelo.UserName;
                 novoUsuario.Nome = modelo.Nome;
+                novoUsuario.LockoutEnabled = true;
 
                 var usuario = await UserManager.FindByEmailAsync(modelo.Email);
 
@@ -113,11 +118,25 @@ namespace ByteBank.Forum.Controllers
                                                         usuario.UserName,
                                                         modelo.Senha,
                                                         isPersistent: modelo.ContinuarLogado,
-                                                        shouldLockout: false);
+                                                        shouldLockout: true);
                 switch (resultadoSignIn)
                 {
                     case SignInStatus.Success:
                         return RedirectToAction("Index", "Home");
+                    case SignInStatus.LockedOut:
+                        var senhaCorreta = await UserManager.CheckPasswordAsync(usuario, modelo.Senha);
+
+                        if (senhaCorreta)
+                        {
+                            ModelState.AddModelError("", "Você errou a senha mais de 3 vezes!");
+                            ModelState.AddModelError("", "A conta está bloqueada! Aguarde 5 minutos e tente novamente.");
+                        }
+                        else
+                        {
+                            return SenhaOuUsuarioInvalidos();
+                        }
+                        break;
+                            
                     default:
                         return SenhaOuUsuarioInvalidos();
                 }
@@ -162,6 +181,13 @@ namespace ByteBank.Forum.Controllers
                 //$"Bem Vindo ao fórum ByteBank, use o código {token} para confirmar seu endereço de e-mail."
                 $"Bem Vindo ao fórum ByteBank, clique aqui {linkCallBack} para confirmar seu endereço de e-mail!"
             );
+        }
+
+        [HttpPost]
+        public ActionResult Logoff()
+        {
+            AuthenticationManager.SignOut(DefaultAuthenticationTypes.ApplicationCookie);
+            return RedirectToAction("Index", "Home");
         }
 
         private void AdicionaErros(IdentityResult resultado)

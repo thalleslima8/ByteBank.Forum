@@ -7,6 +7,7 @@ using Owin;
 using System.Data.Entity;
 using ByteBank.Forum.App_Start.Identity;
 using Microsoft.Owin.Security.Cookies;
+using System;
 
 [assembly: OwinStartup(typeof(ByteBank.Forum.Startup))]
 
@@ -51,6 +52,10 @@ namespace ByteBank.Forum
                     var dataProtectioProviderCreated = dataProvider.Create("ByteBank.Forum");
 
                     userManager.UserTokenProvider = new DataProtectorTokenProvider<UsuarioAplicacao>(dataProtectioProviderCreated);
+
+                    userManager.MaxFailedAccessAttemptsBeforeLockout = 3;
+                    userManager.DefaultAccountLockoutTimeSpan = TimeSpan.FromMinutes(5);
+                    userManager.UserLockoutEnabledByDefault = true;
 
                     return userManager;
                 });

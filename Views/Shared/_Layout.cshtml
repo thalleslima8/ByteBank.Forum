@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNet.Identity
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -25,8 +26,24 @@
                     <li>@Html.ActionLink("Criar Tópico", "Criar", "Topico")</li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
-                    <li>@Html.ActionLink("Registrar", "Registrar", "Conta")</li>
-                    <li><button type="button" class="btn navbar-btn">@Html.ActionLink("Login", "Login", "Conta")</button></li>
+                    @if (Request.IsAuthenticated)
+                    {
+                        using (Html.BeginForm("Logoff", "Conta", FormMethod.Post, new { id = "formulario_logoff" }))
+                        {
+
+                        }
+
+                        <li><p class="navbar-text">Olá, @User.Identity.GetUserName()</p></li>
+                        <li><a href="javascript:document.getElementById('formulario_logoff').submit()" class="navbar-link">Sair</a></li>
+                    }
+                    else
+                    {
+                        <li>@Html.ActionLink("Registrar", "Registrar", "Conta")</li>
+                        <li><button type="button" class="btn navbar-btn">@Html.ActionLink("Login", "Login", "Conta")</button></li>
+                    }
+
+
+
                 </ul> 
             </div>
         </div>
