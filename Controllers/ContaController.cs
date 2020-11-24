@@ -19,7 +19,7 @@ namespace ByteBank.Forum.Controllers
         {
             get
             {
-                if(_userManager == null)
+                if (_userManager == null)
                 {
                     var contextOwin = HttpContext.GetOwinContext();
                     _userManager = contextOwin.GetUserManager<UserManager<UsuarioAplicacao>>();
@@ -31,6 +31,26 @@ namespace ByteBank.Forum.Controllers
                 _userManager = value;
             }
         }
+
+        private SignInManager<UsuarioAplicacao, string> _signInManager;
+        public SignInManager<UsuarioAplicacao, string> SignInManager
+        {
+            get
+            {
+                if (_signInManager == null)
+                {
+                    var contextOwin = HttpContext.GetOwinContext();
+                    _signInManager = contextOwin.GetUserManager<SignInManager<UsuarioAplicacao, string>>();
+                }
+                return _signInManager;
+            }
+            set
+            {
+                _signInManager = value;
+            }
+        }
+
+
 
         // GET: Conta
         public ActionResult Registrar()
@@ -70,6 +90,47 @@ namespace ByteBank.Forum.Controllers
 
             }
             return View();
+        }
+
+        //GET: Login
+        public async Task<ActionResult> Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Login(ContaLoginViewModel modelo)
+        {
+            if (ModelState.IsValid)
+            {
+                var usuario = await UserManager.FindByEmailAsync(modelo.Email);
+
+                if (usuario == null)
+                    return SenhaOuUsuarioInvalidos();
+
+               
+                var resultadoSignIn = await SignInManager.PasswordSignInAsync(
+                                                        usuario.UserName,
+                                                        modelo.Senha,
+                                                        isPersistent: modelo.ContinuarLogado,
+                                                        shouldLockout: false);
+                switch (resultadoSignIn)
+                {
+                    case SignInStatus.Success:
+                        return RedirectToAction("Index", "Home");
+                    default:
+                        return SenhaOuUsuarioInvalidos();
+                }
+
+            }
+
+            return View(modelo);
+        }
+
+        private ActionResult SenhaOuUsuarioInvalidos()
+        {
+            ModelState.AddModelError("", "Credenciais inválidas!");
+            return View("Login");
         }
 
         public async Task<ActionResult> ConfirmacaoEmail(string usuarioId, string token)
