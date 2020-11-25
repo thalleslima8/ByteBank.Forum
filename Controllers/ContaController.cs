@@ -73,7 +73,6 @@ namespace ByteBank.Forum.Controllers
                 novoUsuario.Email = modelo.Email;
                 novoUsuario.UserName = modelo.UserName;
                 novoUsuario.Nome = modelo.Nome;
-                novoUsuario.LockoutEnabled = true;
 
                 var usuario = await UserManager.FindByEmailAsync(modelo.Email);
 
@@ -111,9 +110,11 @@ namespace ByteBank.Forum.Controllers
                 var usuario = await UserManager.FindByEmailAsync(modelo.Email);
 
                 if (usuario == null)
-                    return SenhaOuUsuarioInvalidos();
+                    return SenhaOuUsuarioInvalidos("Credenciais inválidas!");
 
-               
+                if(!usuario.EmailConfirmed)
+                    return View("AguardandoConfirmacao");
+
                 var resultadoSignIn = await SignInManager.PasswordSignInAsync(
                                                         usuario.UserName,
                                                         modelo.Senha,
@@ -133,12 +134,12 @@ namespace ByteBank.Forum.Controllers
                         }
                         else
                         {
-                            return SenhaOuUsuarioInvalidos();
+                            return SenhaOuUsuarioInvalidos("Credenciais inválidas!");
                         }
                         break;
                             
                     default:
-                        return SenhaOuUsuarioInvalidos();
+                        return SenhaOuUsuarioInvalidos("Credenciais inválidas!");
                 }
 
             }
@@ -146,9 +147,74 @@ namespace ByteBank.Forum.Controllers
             return View(modelo);
         }
 
-        private ActionResult SenhaOuUsuarioInvalidos()
+        //GET
+        public ActionResult EsqueciSenha()
         {
-            ModelState.AddModelError("", "Credenciais inválidas!");
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> EsqueciSenha(ContaEsqueciSenhaViewModel modelo)
+        {
+            if (ModelState.IsValid)
+            {
+                var usuario = await UserManager.FindByEmailAsync(modelo.Email);
+                if(usuario != null)
+                {
+                    //Gerar token de reset da senha
+                    var token = await UserManager.GeneratePasswordResetTokenAsync(usuario.Id);
+
+                    //Gerar Url para usuario
+                    var linkCallBack = Url.Action(
+                                            "ConfirmacaoAlterouSenha",
+                                            "Conta",
+                                            new { usuarioId = usuario.Id, token = token },
+                                            Request.Url.Scheme);
+
+                    //Enviar e-mail
+                    await UserManager.SendEmailAsync(
+                        usuario.Id,
+                        "Fórum ByteBank - Alteração de Senha",
+                        $"Bem Vindo ao fórum ByteBank, clique aqui {linkCallBack} para alterar a sua senha!"
+                    );
+
+                }
+                return View("EmailAlteracaoSenhaEnviado");
+            }
+            return View();
+        }
+
+        //GET: Confirmação de Senha
+        public ActionResult ConfirmacaoAlterouSenha(string usuarioId, string token)
+        {
+            var modelo = new ContaConfirmacaoAlterouSenhaViewModel()
+            {
+                UsuarioId = usuarioId,
+                Token = token
+            };
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> ConfirmacaoAlterouSenha(ContaConfirmacaoAlterouSenhaViewModel modelo)
+        {
+            if (ModelState.IsValid)
+            {
+                //Verifica Token
+                var resultadoNovaSenha = await UserManager.ResetPasswordAsync(modelo.UsuarioId, modelo.Token, modelo.NovaSenha);
+
+                if (resultadoNovaSenha.Succeeded)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                AdicionaErros(resultadoNovaSenha);
+            }
+            return View();
+        }
+
+        private ActionResult SenhaOuUsuarioInvalidos(string msg)
+        {
+            ModelState.AddModelError("", msg);
             return View("Login");
         }
 
